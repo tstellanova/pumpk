@@ -69,38 +69,40 @@ fn toggle_leds() {
 
 // main body of Task 1
 fn task1_body(send_val: u8)  {
-    let send_buf:[u8; 4] = [send_val, 0, 0, 0];
-    unsafe {
-        GLOBAL_QUEUE_HANDLE.load(Ordering::Relaxed).as_ref().unwrap()
-            .send(send_buf, Duration::ms(250)).unwrap();
-    }
+    // let send_buf:LemonMsg = [send_val, 0, 0, 0];
+    // unsafe {
+    //     GLOBAL_QUEUE_HANDLE.load(Ordering::Relaxed).as_ref().unwrap()
+    //         .send(send_buf, Duration::ms(250)).unwrap();
+    // }
 
 }
 
 /// RTOS calls this function to start Task 1
 fn task1_start() {
     //rprintln!("task1_start");
+    let mut delayer = TaskDelay::new();
 
     let mut send_val:u8 = 0;
     loop {
         let _ = task1_body(send_val);
         send_val = send_val.wrapping_add(1);
         //TODO yield?
+        delayer.delay_until(Duration::ms(50));
     };
 }
 
 
 /// main body of Task 2
 fn task2_body() -> i32 {
-    if let Ok(_data) =
-        unsafe {
-            GLOBAL_QUEUE_HANDLE.load(Ordering::Relaxed).as_ref().unwrap()
-                .receive(Duration::ms(50))
-        }
-    {
+    // if let Ok(_data) =
+    //     unsafe {
+    //         GLOBAL_QUEUE_HANDLE.load(Ordering::Relaxed).as_ref().unwrap()
+    //             .receive(Duration::ms(50))
+    //     }
+    // {
         toggle_leds();
         UPDATE_COUNT.fetch_add(1, Ordering::SeqCst);
-    }
+    // }
 
     0
 }
@@ -136,7 +138,6 @@ pub fn setup_tasks() {
 
 #[alloc_error_handler]
 fn alloc_error(_layout: core::alloc::Layout) -> ! {
-    //set_led(true);
     asm::bkpt();
     loop {}
 }
