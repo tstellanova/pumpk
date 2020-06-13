@@ -1,3 +1,8 @@
+/*
+Copyright (c) 2020, Todd Stellanova
+All rights reserved.
+License: BSD 3-Clause License (see LICENSE file)
+*/
 #![no_main]
 #![no_std]
 #![feature(alloc_error_handler)]
