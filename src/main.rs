@@ -37,14 +37,20 @@ static USER_LED1: AtomicPtr<UserLed1Type> = AtomicPtr::new(core::ptr::null_mut()
 /// cortex-m-rt calls this for serious faults.  can set a breakpoint to debug
 #[exception]
 fn HardFault(_ef: &ExceptionFrame) -> ! {
-    rprintln!("HardFault {:?}", _ef);
+    asm::bkpt();
     loop {}
 }
 
 /// Called when FreeRTOS assert fails
 #[no_mangle]
 extern "C" fn handle_assert_failed() {
-    rprintln!("handle_assert_failed");
+    asm::bkpt();
+}
+
+/// Called when FreeRTOS detects a stack overflow
+#[no_mangle]
+extern "C" fn vApplicationStackOverflowHook() {
+    asm::bkpt();
 }
 
 #[alloc_error_handler]
@@ -89,22 +95,24 @@ fn task2_start() {
     let mut delayer = TaskDelay::new();
 
     loop {
-        if let Ok(msg) = unsafe {
+        if let Ok(_msg) = unsafe {
             GLOBAL_QUEUE_HANDLE
                 .load(Ordering::Relaxed)
                 .as_ref()
                 .unwrap()
                 .receive(Duration::ms(20))
         } {
+
             toggle_leds();
-            UPDATE_COUNT.fetch_add(1, Ordering::SeqCst);
+            UPDATE_COUNT.fetch_add(1, Ordering::Relaxed);
+
             //this delay makes the LED blinking more perceptible
             delayer.delay_until(Duration::ms(50));
         }
     }
 }
 
-pub fn setup_tasks() {
+fn setup_tasks() {
     rprintln!("setup_tasks");
 
     Task::new()
@@ -112,6 +120,7 @@ pub fn setup_tasks() {
         .stack_size(128)
         .start(task2_start)
         .unwrap();
+
     Task::new()
         .name("task1")
         .stack_size(128)

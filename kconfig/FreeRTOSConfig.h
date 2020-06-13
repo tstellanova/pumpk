@@ -69,6 +69,7 @@
 #define configUSE_RECURSIVE_MUTEXES              1
 #define configUSE_COUNTING_SEMAPHORES            1
 #define configUSE_PORT_OPTIMISED_TASK_SELECTION  0
+#define configCHECK_FOR_STACK_OVERFLOW           2
 
 /* Co-routine definitions. */
 #define configUSE_CO_ROUTINES                    0

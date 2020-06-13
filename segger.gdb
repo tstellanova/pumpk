@@ -26,8 +26,8 @@ end
 
 load
 
-b HardFault
-b handle_assert_failed
+# b HardFault
+# b handle_assert_failed
 # b rust_begin_unwind
 
 run
